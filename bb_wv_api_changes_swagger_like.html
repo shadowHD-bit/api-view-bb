@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partner Client API</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --border: #d9e0ea;
+      --soft: #f8fafc;
+      --green: #22a06b;
+      --blue: #2878d7;
+      --orange: #f79009;
+      --red: #d92d20;
+      --code-bg: #111827;
+      --code-text: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    header {
+      background: #0f172a;
+      color: #fff;
+      padding: 28px 40px;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 1100px;
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      padding: 24px 40px 60px;
+    }
+
+    nav {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    nav h3 {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    nav a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    nav a:hover { background: #eef4ff; color: #1d4ed8; }
+
+    main { max-width: 1220px; }
+    section { margin-bottom: 24px; }
+
+    .card, .endpoint {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+    }
+
+    .body { padding: 22px 24px; }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .subtitle { color: var(--muted); margin-top: -4px; }
+
+    .endpoint-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--soft);
+    }
+
+    .method {
+      min-width: 72px;
+      text-align: center;
+      color: #fff;
+      font-weight: 800;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 13px;
+      letter-spacing: .04em;
+    }
+
+    .post { background: var(--green); }
+    .get { background: var(--blue); }
+    .webhook { background: #0ea5e9; }
+
+    .path {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .badge.green { background: #ecfdf3; color: #027a48; }
+    .badge.orange { background: #fff7ed; color: #c2410c; }
+    .badge.gray { background: #f2f4f7; color: #475467; }
+
+    h2, h3, h4 { color: #101828; }
+    h3 { margin: 22px 0 8px; font-size: 18px; }
+    h4 { margin: 18px 0 8px; font-size: 15px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: #f8fafc; font-weight: 800; }
+
+    code:not(pre code) {
+      background: #eef2f7;
+      border-radius: 6px;
+      padding: 2px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    pre {
+      margin: 12px 0 18px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 14px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    pre code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+    .notice {
+      border-left: 4px solid var(--blue);
+      background: #eff6ff;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin: 14px 0;
+      color: #1e3a8a;
+    }
+
+    .warning { border-left-color: var(--orange); background: #fff7ed; color: #7c2d12; }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .mini-card h4 { margin-top: 0; }
+    ul { padding-left: 22px; }
+
+    @media (max-width: 1060px) {
+      .layout { grid-template-columns: 1fr; padding: 20px; }
+      nav { position: static; }
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Partner Client API</h1>
+    <p>Описание внешних методов для партнёрской интеграции: идентификация клиента, создание / обновление клиента партнёра, получение лимитов, курс обмена, создание СБП-инвойса, получение статуса и webhook</p>
+  </header>
+
+  <div class="layout">
+    <nav>
+      <h3>Навигация</h3>
+      <a href="#overview">Общее описание</a>
+      <a href="#signature">Подпись запросов</a>
+      <a href="#partner-clients">POST /partner-clients</a>
+      <a href="#prediction">GET /prediction-sbp</a>
+      <a href="#rates">GET /exchange-rates</a>
+      <a href="#invoices-create">POST /invoices</a>
+      <a href="#invoices-get">GET /invoices</a>
+      <a href="#webhook">Webhook</a>
+      <a href="#errors">Ошибки</a>
+    </nav>
+
+    <main>
+      <section id="overview" class="card">
+        <div class="body">
+          <h2 class="section-title">Общее описание</h2>
+          <p class="subtitle">Способ идентификации клиента определяется для партнёра на этапе заключения договора и сохраняется в настройках партнёра. От выбранного способа зависит, какие данные передаются партнёром и где выполняется идентификация клиента при создании СБП-инвойса</p>
+
+          <div class="grid-3">
+            <div class="mini-card">
+              <h4><code>BY_EXTERNAL_DATA</code></h4>
+              <p>Партнёр передаёт данные клиента через <code>POST /api/v1/partner-clients</code>. Система создаёт или обновляет клиента партнёра и выполняет необходимые проверки</p>
+              <span class="badge green">данные от партнёра</span>
+            </div>
+            <div class="mini-card">
+              <h4><code>BY_EXTERNAL_ID</code></h4>
+              <p>Партнёр передаёт только внешний идентификатор клиента. Система использует его для поиска или создания клиента партнёра, а KYC выполняется на стороне платформы</p>
+              <span class="badge orange">только external_id</span>
+            </div>
+            <div class="mini-card">
+              <h4><code>BY_BB_LOGIN</code></h4>
+              <p>Партнёр передаёт внешний идентификатор как reference. Клиент определяется на стороне платформы после перехода на страницу инвойса</p>
+              <span class="badge">идентификация платформой</span>
+            </div>
+          </div>
+
+          <div class="notice">
+            <strong>Ключевая идея:</strong> <code>partner_client_external_id</code> передаётся в инвойсе всегда, но его смысл зависит от типа идентификации. Для <code>BY_BB_LOGIN</code> он не используется для поиска клиента партнёра и хранится как технический reference
+          </div>
+          <div class="notice warning">
+            Если в инвойсе не используется обменная операция, блок <code>exchange_info</code> не возвращается в ответах и webhook
+          </div>
+        </div>
+      </section>
+
+      <section id="signature" class="card">
+        <div class="body">
+          <h2 class="section-title">Подпись запросов</h2>
+          <p class="subtitle">Для внешних методов используется HMAC-подпись. Конкретная строка для подписи зависит от метода</p>
+
+          <h3>Общие правила</h3>
+          <ul>
+            <li>Партнёр передаёт публичный API-ключ в заголовке <code>X-API-KEY</code></li>
+            <li>Поле <code>sign</code> передаётся в теле запроса</li>
+            <li>Подпись рассчитывается на стороне партнёра и проверяется на стороне платформы</li>
+            <li>Если подпись не совпадает, запрос отклоняется</li>
+          </ul>
+
+          <h3>Подпись для создания / обновления клиента партнёра</h3>
+          <p>Для <code>POST /api/v1/partner-clients</code> подпись рассчитывается от канонического JSON тела запроса без поля <code>sign</code></p>
+
+          <pre><code>sign = hmac_sha256(canonical_json(body_without_sign), api_key.secret)</code></pre>
+
+          <p>Пример тела, которое подписывается</p>
+          <pre><code>{
+  "client_id": "client-001",
+  "last_name": "Иванов",
+  "first_name": "Иван",
+  "phone": "+79990001122",
+  "birth_date": "1990-01-01",
+  "passport": "4510123456",
+  "passport_issue_date": "2010-01-15"
+}</code></pre>
+
+          <p>Пример запроса с подписью</p>
+          <pre><code>{
+  "client_id": "client-001",
+  "last_name": "Иванов",
+  "first_name": "Иван",
+  "phone": "+79990001122",
+  "birth_date": "1990-01-01",
+  "passport": "4510123456",
+  "passport_issue_date": "2010-01-15",
+  "sign": "&lt;calculated_sign&gt;"
+}</code></pre>
+
+          <h3>Подпись для создания инвойса</h3>
+          <p>Для <code>POST /api/v1/invoices</code> подпись рассчитывается по строке из полей <code>currency</code>, <code>amount</code>, <code>header</code>, <code>description</code></p>
+
+          <pre><code>sign = hmac_sha256(currency + amount + header + description, api_key)</code></pre>
+
+          <p>Для строки</p>
+          <pre><code>RUBR10000ООО РомашкаОплата заказа #A-1024</code></pre>
+
+          <p>подпись будет передана в поле</p>
+          <pre><code>{
+  "sign": "&lt;calculated_sign&gt;"
+}</code></pre>
+
+          <h3>Подписи в ответах и webhook</h3>
+          <p>В ответах по инвойсу и webhook могут возвращаться две подписи</p>
+
+          <table>
+            <thead><tr><th>Поле</th><th>Описание</th></tr></thead>
+            <tbody>
+              <tr><td><code>sign</code></td><td>Подпись ответа, рассчитанная с использованием API key</td></tr>
+              <tr><td><code>sign_2</code></td><td>Подпись ответа, рассчитанная с использованием API secret</td></tr>
+            </tbody>
+          </table>
+
+          <div class="notice warning">Формат канонического JSON и точный секрет для HMAC должны быть едиными для партнёра и платформы, иначе проверка подписи будет невозможна</div>
+        </div>
+      </section>
+
+      <section id="partner-clients" class="endpoint">
+        <div class="endpoint-head"><span class="method post">POST</span><span class="path">/api/v1/partner-clients</span></div>
+        <div class="body">
+          <h2 class="section-title">Создание или обновление клиента партнёра</h2>
+          <p>Метод используется для сценария <code>BY_EXTERNAL_DATA</code>, когда партнёр передаёт данные клиента до создания инвойса</p>
+          <div class="badge-row"><span class="badge green">BY_EXTERNAL_DATA</span><span class="badge gray">X-API-KEY</span><span class="badge gray">sign</span></div>
+          <div class="notice">Подпись запроса рассчитывается как <code>hmac_sha256(canonical_json(body_without_sign), api_key.secret)</code></div>
+
+          <h3>Headers</h3>
+          <table>
+            <thead><tr><th>Параметр</th><th>Обяз.</th><th>Описание</th></tr></thead>
+            <tbody><tr><td><code>X-API-KEY</code></td><td>Да</td><td>Публичный API-ключ партнёра</td></tr></tbody>
+          </table>
+
+          <h3>Request body</h3>
+          <table>
+            <thead><tr><th>Параметр</th><th>Тип</th><th>Обяз.</th><th>Описание</th></tr></thead>
+            <tbody>
+              <tr><td><code>client_id</code></td><td>String</td><td>Да</td><td>Внешний идентификатор клиента в системе партнёра</td></tr>
+              <tr><td><code>last_name</code></td><td>String</td><td>Да</td><td>Фамилия</td></tr>
+              <tr><td><code>first_name</code></td><td>String</td><td>Да</td><td>Имя</td></tr>
+              <tr><td><code>middle_name</code></td><td>String</td><td>Нет</td><td>Отчество</td></tr>
+              <tr><td><code>phone</code></td><td>String</td><td>Да</td><td>Телефон клиента</td></tr>
+              <tr><td><code>email</code></td><td>String</td><td>Нет</td><td>Email клиента</td></tr>
+              <tr><td><code>birth_date</code></td><td>Date</td><td>Да</td><td>Дата рождения</td></tr>
+              <tr><td><code>passport</code></td><td>String</td><td>Да</td><td>Серия и номер паспорта</td></tr>
+              <tr><td><code>passport_issue_date</code></td><td>Date</td><td>Да</td><td>Дата выдачи паспорта</td></tr>
+              <tr><td><code>country_of_passport_issue</code></td><td>String</td><td>Нет</td><td>Страна выдачи, например <code>RUS</code></td></tr>
+              <tr><td><code>inn</code></td><td>String</td><td>Нет</td><td>ИНН</td></tr>
+              <tr><td><code>sign</code></td><td>String</td><td>Да</td><td>HMAC-подпись запроса</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Пример запроса</h3>
+          <pre><code>{
+  "client_id": "client-001",
+  "last_name": "Иванов",
+  "first_name": "Иван",
+  "middle_name": "Иванович",
+  "phone": "+79990001122",
+  "email": "ivan@example.com",
+  "birth_date": "1990-01-01",
+  "passport": "4510123456",
+  "passport_issue_date": "2010-01-15",
+  "country_of_passport_issue": "RUS",
+  "inn": "123456789012",
+  "sign": "&lt;calculated_sign&gt;"
+}</code></pre>
+
+          <h3>Пример ответа</h3>
+          <pre><code>{
+  "client_id": "client-001",
+  "partner_client_id": "pc_123456",
+  "is_verified_for_sbp": true
+}</code></pre>
+        </div>
+      </section>
+
+      <section id="prediction" class="endpoint">
+        <div class="endpoint-head"><span class="method get">GET</span><span class="path">/api/v1/prediction-sbp</span></div>
+        <div class="body">
+          <h2 class="section-title">Получение лимитов и комиссии</h2>
+          <p>Метод используется для получения лимитов и параметров комиссии по СБП</p>
+          <div class="badge-row"><span class="badge green">SBP</span><span class="badge gray">external</span></div>
+
+          <h3>Пример запроса</h3>
+          <pre><code>GET /api/v1/prediction-sbp</code></pre>
+
+          <h3>Пример ответа</h3>
+          <pre><code>{
+  "currency_code": "RUBR",
+  "min_sbp_limit": 1000.0,
+  "max_sbp_limit": 1000000.0,
+  "sbp_fee_pct": 1.0,
+  "sbp_fee_abs": 100.0
+}</code></pre>
+
+          <h3>Response fields</h3>
+          <table>
+            <thead><tr><th>Параметр</th><th>Описание</th></tr></thead>
+            <tbody>
+              <tr><td><code>currency_code</code></td><td>Валюта лимитов и комиссии</td></tr>
+              <tr><td><code>min_sbp_limit</code></td><td>Минимальная сумма инвойса</td></tr>
+              <tr><td><code>max_sbp_limit</code></td><td>Максимальная сумма инвойса</td></tr>
+              <tr><td><code>sbp_fee_pct</code></td><td>Процент комиссии</td></tr>
+              <tr><td><code>sbp_fee_abs</code></td><td>Минимальная фиксированная комиссия</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="rates" class="endpoint">
+        <div class="endpoint-head"><span class="method get">GET</span><span class="path">/api/v1/exchange-rates</span></div>
+        <div class="body">
+          <h2 class="section-title">Получение текущего курса обмена</h2>
+          <p>Метод используется для предварительного расчёта <code>RUBR → USDT</code>. Endpoint предварительный и требует подтверждения фактического URL</p>
+          <div class="badge-row"><span class="badge orange">optional</span><span class="badge gray">exchange</span></div>
+
+          <h3>Query params</h3>
+          <table>
+            <thead><tr><th>Параметр</th><th>Обяз.</th><th>Описание</th></tr></thead>
+            <tbody>
+              <tr><td><code>from</code></td><td>Да</td><td>Валюта оплаты, например <code>RUBR</code></td></tr>
+              <tr><td><code>to</code></td><td>Да</td><td>Валюта получения, например <code>USDT</code></td></tr>
+              <tr><td><code>network</code></td><td>Да</td><td>Сеть, например <code>TRC20</code></td></tr>
+              <tr><td><code>amount</code></td><td>Да</td><td>Сумма для расчёта</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Пример запроса</h3>
+          <pre><code>GET /api/v1/exchange-rates?from=RUBR&amp;to=USDT&amp;network=TRC20&amp;amount=990</code></pre>
+
+          <h3>Пример ответа</h3>
+          <pre><code>{
+  "from_currency": "RUBR",
+  "to_currency": "USDT",
+  "network": "TRC20",
+  "amount": 990,
+  "rate": 100.0,
+  "estimated_to_amount": 9.9,
+  "rate_valid_until": 1735689600,
+  "updated_at": "2026-04-30T12:00:00Z"
+}</code></pre>
+        </div>
+      </section>
+
+      <section id="invoices-create" class="endpoint">
+        <div class="endpoint-head"><span class="method post">POST</span><span class="path">/api/v1/invoices</span></div>
+        <div class="body">
+          <h2 class="section-title">Создание СБП-инвойса</h2>
+          <p>Метод создаёт инвойс. Поведение зависит от <code>partner_client_identification_type</code> партнёра</p>
+          <div class="badge-row"><span class="badge green">BY_EXTERNAL_DATA</span><span class="badge green">BY_EXTERNAL_ID</span><span class="badge green">BY_BB_LOGIN</span></div>
+          <div class="notice">Подпись запроса рассчитывается как <code>hmac_sha256(currency + amount + header + description, api_key)</code></div>
+
+          <h3>Headers</h3>
+          <table>
+            <thead><tr><th>Параметр</th><th>Обяз.</th><th>Описание</th></tr></thead>
+            <tbody><tr><td><code>X-API-KEY</code></td><td>Да</td><td>Публичный API-ключ партнёра</td></tr></tbody>
+          </table>
+
+          <h3>Request body</h3>
+          <table>
+            <thead><tr><th>Параметр</th><th>Тип</th><th>Обяз.</th><th>Описание</th></tr></thead>
+            <tbody>
+              <tr><td><code>payment_currencies</code></td><td>String[]</td><td>Да</td><td>Для СБП: <code>["RUBR"]</code></td></tr>
+              <tr><td><code>currency</code></td><td>String</td><td>Да</td><td>Для СБП: <code>RUBR</code></td></tr>
+              <tr><td><code>amount</code></td><td>Decimal</td><td>Да</td><td>Сумма инвойса</td></tr>
+              <tr><td><code>description</code></td><td>String</td><td>Да</td><td>Описание платежа</td></tr>
+              <tr><td><code>header</code></td><td>String</td><td>Да</td><td>Заголовок страницы инвойса</td></tr>
+              <tr><td><code>payer</code></td><td>String</td><td>Нет</td><td>Отображаемый плательщик</td></tr>
+              <tr><td><code>language</code></td><td>String</td><td>Нет</td><td>Язык страницы</td></tr>
+              <tr><td><code>crypto_payment</code></td><td>Boolean</td><td>Да</td><td>Для СБП: <code>false</code></td></tr>
+              <tr><td><code>sbp_payment</code></td><td>Boolean</td><td>Да</td><td>Для СБП: <code>true</code></td></tr>
+              <tr><td><code>partner_client_external_id</code></td><td>String</td><td>Да</td><td>ID клиента / аккаунта на стороне партнёра. Для <code>BY_BB_LOGIN</code> сохраняется как reference</td></tr>
+              <tr><td><code>data.order_id</code></td><td>String</td><td>Да</td><td>Идентификатор заявки партнёра</td></tr>
+              <tr><td><code>data.exchange</code></td><td>Object</td><td>Нет</td><td>Данные предварительного обменного расчёта. Если обмен не используется, блок не передаётся</td></tr>
+              <tr><td><code>sign</code></td><td>String</td><td>Да</td><td>HMAC-подпись</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Пример запроса</h3>
+          <pre><code>{
+  "payment_currencies": ["RUBR"],
+  "currency": "RUBR",
+  "amount": 990,
+  "description": "Buy USDT order #BUY-1024",
+  "header": "Partner App",
+  "payer": "Partner App",
+  "language": "ru",
+  "crypto_payment": false,
+  "sbp_payment": true,
+  "partner_client_external_id": "client-001",
+  "data": {
+    "order_id": "BUY-1024",
+    "exchange": {
+      "from_currency": "RUBR",
+      "to_currency": "USDT",
+      "network": "TRC20",
+      "expected_rate": 100.0,
+      "expected_to_amount": 9.9
+    }
+  },
+  "sign": "&lt;calculated_sign&gt;"
+}</code></pre>
+
+          <h3>Пример ответа для идентификации на стороне платформы</h3>
+          <pre><code>{
+  "result": "success",
+  "id": "1izt8r3YNoZ6kgwewB3xCB",
+  "link": "https://example.com/invoice/1izt8r3YNoZ6kgwewB3xCB",
+  "sbp_payment": true,
+  "partner_client_external_id": "client-001",
+  "partner_client_identification_type": "BY_BB_LOGIN",
+  "sbp_info": {
+    "amount": 1000,
+    "currency_symbol": "RUBR",
+    "status": "pending",
+    "code": null,
+    "qr_url": null,
+    "sbp_qr": null,
+    "sbp_qr_media_type": null,
+    "dt_expiration": null
+  },
+  "exchange_info": {
+    "from_currency": "RUBR",
+    "to_currency": "USDT",
+    "network": "TRC20",
+    "expected_rate": 100.0,
+    "expected_to_amount": 9.9,
+    "rate_fixed": false
+  }
+}</code></pre>
+
+          <div class="notice warning">Для <code>BY_BB_LOGIN</code> QR / оплата не отображаются до определения клиента партнёра на стороне платформы</div>
+        </div>
+      </section>
+      <section id="invoices-get" class="endpoint">
+        <div class="endpoint-head"><span class="method get">GET</span><span class="path">/api/v1/invoices?id={id}</span></div>
+        <div class="body">
+          <h2 class="section-title">Получение информации об инвойсе</h2>
+          <p>Метод используется для polling и сверки статуса инвойса</p>
+          <div class="notice">Ответ содержит <code>sign</code> и <code>sign_2</code> для проверки подлинности данных</div>
+
+          <h3>Пример запроса</h3>
+          <pre><code>GET /api/v1/invoices?id=1izt8r3YNoZ6kgwewB3xCB</code></pre>
+
+          <h3>Пример ответа</h3>
+          <pre><code>{
+  "sign": "&lt;calculated_sign_by_api_key&gt;",
+  "sign_2": "&lt;calculated_sign_by_api_secret&gt;",
+  "payed": true,
+  "id": "1izt8r3YNoZ6kgwewB3xCB",
+  "amount": 990,
+  "currency": "RUBR",
+  "payed_amount": 990,
+  "partner_client_external_id": "client-001",
+  "partner_client_id": "pc_123456",
+  "partner_client_identification_type": "BY_EXTERNAL_ID",
+  "data": {
+    "order_id": "BUY-1024"
+  },
+  "crypto_payment": false,
+  "sbp_payment": true,
+  "sbp_info": {
+    "amount": 1000,
+    "currency_symbol": "RUBR",
+    "status": "captured",
+    "code": "0",
+    "qr_url": null,
+    "sbp_qr": null,
+    "sbp_qr_media_type": null,
+    "dt_expiration": null
+  },
+  "exchange_info": {
+    "from_currency": "RUBR",
+    "from_amount": 990,
+    "to_currency": "USDT",
+    "network": "TRC20",
+    "expected_rate": 100.0,
+    "expected_to_amount": 9.9,
+    "actual_rate": 99.8,
+    "actual_to_amount": 9.91983967,
+    "exchange_status": "completed",
+    "exchanged_at": "2026-04-30T12:03:15Z"
+  },
+  "transactions": [],
+  "addresses": {
+    "RUBR": {
+      "FIAT": {
+        "address": "",
+        "memo": null
+      }
+    }
+  }
+}</code></pre>
+          <div class="notice warning">Если для инвойса не используется обменная операция, блок <code>exchange_info</code> не возвращается</div>
+        </div>
+      </section>
+
+      <section id="webhook" class="endpoint">
+        <div class="endpoint-head"><span class="method webhook">POST</span><span class="path">&lt;partner_invoices_webhook_url&gt;</span></div>
+        <div class="body">
+          <h2 class="section-title">Webhook по изменению статуса инвойса</h2>
+          <p>Платформа отправляет webhook на URL партнёра при изменении статуса инвойса. Payload соответствует формату <code>GET /api/v1/invoices</code></p>
+          <div class="notice">Webhook содержит <code>sign</code> и <code>sign_2</code> для проверки подлинности payload</div>
+
+          <h3>Пример payload</h3>
+          <pre><code>{
+  "sign": "&lt;calculated_sign_by_api_key&gt;",
+  "sign_2": "&lt;calculated_sign_by_api_secret&gt;",
+  "payed": true,
+  "id": "1izt8r3YNoZ6kgwewB3xCB",
+  "amount": 990,
+  "currency": "RUBR",
+  "payed_amount": 990,
+  "partner_client_external_id": "client-001",
+  "partner_client_id": "pc_123456",
+  "partner_client_identification_type": "BY_BB_LOGIN",
+  "data": {
+    "order_id": "BUY-1024"
+  },
+  "sbp_info": {
+    "amount": 1000,
+    "currency_symbol": "RUBR",
+    "status": "captured",
+    "code": "0"
+  },
+  "exchange_info": {
+    "from_currency": "RUBR",
+    "from_amount": 990,
+    "to_currency": "USDT",
+    "network": "TRC20",
+    "actual_rate": 99.8,
+    "actual_to_amount": 9.91983967,
+    "exchange_status": "completed",
+    "exchanged_at": "2026-04-30T12:03:15Z"
+  }
+}</code></pre>
+          <div class="notice warning">Если для инвойса не используется обменная операция, блок <code>exchange_info</code> не возвращается в webhook</div>
+
+          <h3>Правила обработки</h3>
+          <ul>
+            <li>Webhook считается доставленным, если партнёр вернул HTTP <code>2xx</code></li>
+            <li>Если webhook не принят, используется текущая retry-логика</li>
+            <li>Партнёр связывает webhook со своей заявкой через <code>data.order_id</code></li>
+            <li>Партнёр определяет результат по <code>payed</code> и <code>sbp_info.status</code></li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="errors" class="card">
+        <div class="body">
+          <h2 class="section-title">Ошибки</h2>
+          <p>Ниже перечислены ошибки, которые используются для внешних методов и СБП-сценариев</p>
+
+          <table>
+            <thead><tr><th>Ошибка</th><th>Описание</th></tr></thead>
+            <tbody>
+              <tr><td><code>UserForbiddenError</code></td><td>Пользователь не является партнёром / нет права на создание инвойсов</td></tr>
+              <tr><td><code>BadRequestParameters</code></td><td>Некорректный payload или неподходящие параметры</td></tr>
+              <tr><td><code>PartnerClientRequiredForSbpInvoice</code></td><td>Не передан внешний идентификатор клиента партнёра</td></tr>
+              <tr><td><code>PartnerClientDoesNotExist</code></td><td>Клиент партнёра не найден у текущего партнёра или <code>sbp_top_up = false</code></td></tr>
+              <tr><td><code>CanNotPayInvoiceBySBP</code></td><td>Инвойс не может быть создан как СБП-инвойс</td></tr>
+              <tr><td><code>SbpInvoiceCurrencyError</code></td><td>Некорректная валюта для СБП или несовпадение <code>payment_currencies</code></td></tr>
+              <tr><td><code>TooMuchInvoices</code></td><td>Превышен лимит активных неоплаченных инвойсов</td></tr>
+              <tr><td><code>MinInvoiceAmount</code></td><td>Сумма инвойса ниже минимальной допустимой суммы</td></tr>
+              <tr><td><code>UserNotFound</code></td><td>Не найден системный SBP-аккаунт для проведения операции</td></tr>
+              <tr><td><code>SbpPredictionLimitsNotAvailable</code></td><td>Ошибка настроек лимитов</td></tr>
+              <tr><td><code>ParnersClientPasportNumberAlreadyOccupied</code></td><td>Паспорт уже привязан к другому идентификатору у партнёра</td></tr>
+              <tr><td><code>WLForbiddenError</code></td><td>Отключен сервис у WL</td></tr>
+              <tr><td><code>SbpTransferNotAllowedError</code></td><td>Пользователю запрещён сервис СБП</td></tr>
+              <tr><td><code>NeedCompleteKYC</code></td><td>Не пройдена верификация KYC</td></tr>
+              <tr><td><code>ExceededMaxPendingQrCodesError</code></td><td>Превышен лимит неоплаченных QR-кодов</td></tr>
+              <tr><td><code>BankNotFoundError</code></td><td>Не найден банк по имени и стране</td></tr>
+              <tr><td><code>CurrencyNotFound</code></td><td>Отключен рубль или сумма не попадает в лимиты валюты</td></tr>
+              <tr><td><code>SbpBankCostLimitsNotFound</code></td><td>Сумма перевода не входит в диапазон лимитов банка</td></tr>
+              <tr><td><code>NotEnoughMoneyOnBalance</code></td><td>Недостаточно средств на балансе аккаунта администратора СБП</td></tr>
+              <tr><td><code>UnknownSbpPlatform</code></td><td>Обмен данными с платформой банка не поддерживается</td></tr>
+              <tr><td><code>DailyQrlimitReached</code></td><td>Достигнут суточный лимит создания QR-кодов</td></tr>
+              <tr><td><code>GetQrCodeError</code></td><td>Ошибка создания QR-кода на стороне провайдера</td></tr>
+              <tr><td><code>SbpPhoneNumberRequired</code></td><td>Для создания QR-кода обязателен номер телефона</td></tr>
+              <tr><td><code>DailyCompletedQrlimitReached</code></td><td>Достигнут суточный лимит успешных / потенциально успешных QR-кодов</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
