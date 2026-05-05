@@ -282,6 +282,9 @@
             <strong>Ключевая идея:</strong> <code>partner_client_external_id</code> передаётся в инвойсе всегда, но его смысл зависит от типа идентификации. Для <code>BY_BB_LOGIN</code> он не используется для поиска клиента партнёра и хранится как технический reference
           </div>
           <div class="notice warning">
+            Для <code>BY_EXTERNAL_ID</code> и <code>BY_BB_LOGIN</code> запись инвойса может быть создана до создания QR / СБП-платежа. QR и платёжные данные появляются только после определения клиента, KYC / проверок, допуска к СБП и проверки лимитов
+          </div>
+          <div class="notice warning">
             Если в инвойсе не используется обменная операция, блок <code>exchange_info</code> не возвращается в ответах и webhook
           </div>
         </div>
@@ -486,7 +489,7 @@
         <div class="endpoint-head"><span class="method post">POST</span><span class="path">/api/v1/invoices</span></div>
         <div class="body">
           <h2 class="section-title">Создание СБП-инвойса</h2>
-          <p>Метод создаёт инвойс. Поведение зависит от <code>partner_client_identification_type</code> партнёра</p>
+          <p>Метод создаёт запись инвойса. Поведение зависит от <code>partner_client_identification_type</code> партнёра. Для <code>BY_EXTERNAL_ID</code> и <code>BY_BB_LOGIN</code> QR / СБП-платёж могут быть созданы позже, после определения клиента, KYC / проверок, допуска к СБП и проверки лимитов</p>
           <div class="badge-row"><span class="badge green">BY_EXTERNAL_DATA</span><span class="badge green">BY_EXTERNAL_ID</span><span class="badge green">BY_BB_LOGIN</span></div>
           <div class="notice">Подпись запроса рассчитывается как <code>hmac_sha256(currency + amount + header + description, api_key)</code></div>
 
@@ -541,18 +544,20 @@
   "sign": "&lt;calculated_sign&gt;"
 }</code></pre>
 
-          <h3>Пример ответа для идентификации на стороне платформы</h3>
+          <h3>Пример ответа для <code>BY_EXTERNAL_ID</code> или <code>BY_BB_LOGIN</code>, если QR ещё не создан</h3>
           <pre><code>{
   "result": "success",
   "id": "1izt8r3YNoZ6kgwewB3xCB",
+  "status": "identification_required",
   "link": "https://example.com/invoice/1izt8r3YNoZ6kgwewB3xCB",
   "sbp_payment": true,
   "partner_client_external_id": "client-001",
+  "partner_client_id": null,
   "partner_client_identification_type": "BY_BB_LOGIN",
   "sbp_info": {
     "amount": 1000,
     "currency_symbol": "RUBR",
-    "status": "pending",
+    "status": null,
     "code": null,
     "qr_url": null,
     "sbp_qr": null,
@@ -569,7 +574,7 @@
   }
 }</code></pre>
 
-          <div class="notice warning">Для <code>BY_BB_LOGIN</code> QR / оплата не отображаются до определения клиента партнёра на стороне платформы</div>
+          <div class="notice warning">Для <code>BY_EXTERNAL_ID</code> и <code>BY_BB_LOGIN</code> QR / СБП-платёж могут быть не созданы в момент ответа на <code>POST /api/v1/invoices</code>. В этом случае поля <code>qr_url</code>, <code>sbp_qr</code>, <code>sbp_qr_media_type</code>, <code>dt_expiration</code> будут <code>null</code></div>
         </div>
       </section>
       <section id="invoices-get" class="endpoint">
@@ -588,6 +593,7 @@
   "sign_2": "&lt;calculated_sign_by_api_secret&gt;",
   "payed": true,
   "id": "1izt8r3YNoZ6kgwewB3xCB",
+  "status": "paid",
   "amount": 990,
   "currency": "RUBR",
   "payed_amount": 990,
@@ -648,6 +654,7 @@
   "sign_2": "&lt;calculated_sign_by_api_secret&gt;",
   "payed": true,
   "id": "1izt8r3YNoZ6kgwewB3xCB",
+  "status": "paid",
   "amount": 990,
   "currency": "RUBR",
   "payed_amount": 990,
@@ -681,7 +688,7 @@
             <li>Webhook считается доставленным, если партнёр вернул HTTP <code>2xx</code></li>
             <li>Если webhook не принят, используется текущая retry-логика</li>
             <li>Партнёр связывает webhook со своей заявкой через <code>data.order_id</code></li>
-            <li>Партнёр определяет результат по <code>payed</code> и <code>sbp_info.status</code></li>
+            <li>Партнёр определяет результат по <code>payed</code> и <code>status</code>, а <code>sbp_info.status</code> использует как детализацию СБП-операции</li>
           </ul>
         </div>
       </section>
